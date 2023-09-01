@@ -3,9 +3,12 @@
 namespace NIIT\PHPTinker;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Psy\ExecutionClosure;
 use Psy\Shell;
 use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\VarDumper\Cloner\VarCloner;
+use Symfony\Component\VarDumper\Dumper\HtmlDumper;
 
 class Executor
 {
@@ -37,7 +40,9 @@ class Executor
         $shell->setOutput($output);
 
         try {
-            $shell->addCode($code);
+            $shell->addCode(
+                $this->clearCode($code)
+            );
 
             $closure = new ExecutionClosure($shell);
             $closure->execute();
@@ -50,30 +55,65 @@ class Executor
 
         return response()->json([
             'status' => $status,
-            'response' => $response,
+            'response' => $this->dump($response),
         ]);
     }
 
     protected function clearCode($code)
     {
         $cleanCode = '';
+
         if (strncmp($code, '<?php', 5) === 0) {
             $code = array_reverse(explode('<?php', $code, 2))[0];
         }
+
         foreach (token_get_all('<?php ' . $code) as $token) {
             if (is_string($token)) {
                 $cleanCode .= $token;
+
                 continue;
             }
-            if (in_array($token[0], [\T_COMMENT, \T_DOC_COMMENT])) {
-                $cleanCode .= '';
-            } else {
-                $cleanCode .= $token[1];
-            }
+
+            $cleanCode .= in_array($token[0], [T_COMMENT, T_DOC_COMMENT]) ? '' : $token[1];
         }
+
         if (strncmp($cleanCode, '<?php', 5) === 0) {
             $cleanCode = array_reverse(explode('<?php', $cleanCode, 2))[0];
         }
-        return $cleanCode;
+
+        return trim($cleanCode);
+    }
+
+    protected function dump(mixed $arguments, int $maxDepth = null): mixed
+    {
+        if (is_null($arguments)) {
+            return null;
+        }
+
+        if (is_string($arguments)) {
+            return $arguments;
+        }
+
+        if (is_int($arguments)) {
+            return $arguments;
+        }
+
+        if (is_bool($arguments)) {
+            return $arguments;
+        }
+
+        $varCloner = new VarCloner();
+
+        $dumper = new HtmlDumper();
+
+        if ($maxDepth !== null) {
+            $dumper->setDisplayOptions([
+                'maxDepth' => $maxDepth,
+            ]);
+        }
+
+        $htmlDumper = (string)$dumper->dump($varCloner->cloneVar($arguments), true);
+
+        return Str::cut($htmlDumper, '<pre ', '</pre>');
     }
 }
