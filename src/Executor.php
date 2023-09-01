@@ -18,6 +18,7 @@ class Executor
         $code = $request->input('code');
         $status = 1;
 
+        chdir(base_path());
         $output = new BufferedOutput();
         $shell = new Shell();
         $app = app();
@@ -36,7 +37,7 @@ class Executor
         $shell->setOutput($output);
 
         try {
-            $shell->addCode($this->clearCode($code));
+            $shell->addCode($code);
 
             $closure = new ExecutionClosure($shell);
             $closure->execute();
@@ -44,7 +45,7 @@ class Executor
             $response = preg_replace('/\\x1b\\[\\d+m/', '', $output->fetch());
         } catch (\Throwable $e) {
             $status = 0;
-            $response = "Error: " . $e->getMessage();
+            $response = $e->getMessage();
         }
 
         return response()->json([

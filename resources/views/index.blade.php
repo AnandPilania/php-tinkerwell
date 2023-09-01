@@ -63,7 +63,7 @@
                 return;
             }
 
-            let output = "Output: Result of code execution<br/>" + code + '<br/>';
+            let output = `<pre>Command:</pre> ${code}`;
             const xhttp = new XMLHttpRequest();
 
             xhttp.open('POST', 'php-tinker', true);
@@ -71,7 +71,7 @@
                 if (this.readyState === 4 && this.status === 200) {
                     const response = JSON.parse(this.responseText);
 
-                    output += response.status === 1 ? response.response : 'Error';
+                    output += `<pre>Result:</pre> ${(response.status === 1 ? '' : 'Error: ')} ${response.response}`;
                 }
 
                 outputElement.innerHTML = output;
