@@ -2,6 +2,10 @@
 
 namespace NIIT\PHPTinker;
 
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\View\Factory as ViewFactory;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Psy\ExecutionClosure;
@@ -12,7 +16,7 @@ use Symfony\Component\VarDumper\Dumper\HtmlDumper;
 
 class Executor
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): View|ViewFactory|JsonResponse
     {
         if ($request->isMethod('GET')) {
             return view('php-tinker::index');
@@ -22,21 +26,14 @@ class Executor
         $status = 1;
 
         chdir(base_path());
-        $output = new BufferedOutput();
+
         $shell = new Shell();
-        $app = app();
 
-        // Set up Laravel context
-        $app->singleton('app', function () use ($app) {
-            return $app;
-        });
+        $this->setContext($shell);
 
-        // Initialize PsySH with Laravel context
-        $shell->setScopeVariables([
-            'app' => $app,
-        ]);
-
+        $output = $this->setOutput();
         $output->setDecorated(true);
+
         $shell->setOutput($output);
 
         try {
@@ -59,7 +56,7 @@ class Executor
         ]);
     }
 
-    protected function clearCode($code)
+    protected function clearCode($code): string
     {
         $cleanCode = '';
 
@@ -115,5 +112,25 @@ class Executor
         $htmlDumper = (string)$dumper->dump($varCloner->cloneVar($arguments), true);
 
         return Str::cut($htmlDumper, '<pre ', '</pre>');
+    }
+
+    private function setContext(Shell $shell): Application
+    {
+        $app = app();
+
+        $app->singleton('app', function () use ($app) {
+            return $app;
+        });
+
+        $shell->setScopeVariables([
+            'app' => $app,
+        ]);
+
+        return $app;
+    }
+
+    private function setOutput(): BufferedOutput
+    {
+        return new BufferedOutput();
     }
 }

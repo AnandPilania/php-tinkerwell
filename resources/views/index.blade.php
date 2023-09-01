@@ -14,8 +14,7 @@
             height: 100vh;
         }
 
-        .input-panel,
-        .output-panel {
+        .input-panel, .output-panel {
             flex: 1;
             padding: 20px;
             border: 1px solid #ccc;
@@ -37,6 +36,11 @@
 
         #output {
             white-space: pre-wrap;
+        }
+
+        pre.parent{
+            font-weight: bold;
+            color: #939393;
         }
     </style>
 </head>
@@ -63,7 +67,7 @@
                 return;
             }
 
-            let output = `<pre>Command:</pre> ${code}`;
+            let output = `<pre class="parent">Command:</pre> ${code}`;
             const xhttp = new XMLHttpRequest();
 
             xhttp.open('POST', 'php-tinker', true);
@@ -71,7 +75,7 @@
                 if (this.readyState === 4 && this.status === 200) {
                     const response = JSON.parse(this.responseText);
 
-                    output += `<pre>Result:</pre> ${(response.status === 1 ? '' : 'Error: ')} ${response.response}`;
+                    output += `<pre class="parent">Result:</pre> ${(response.status === 1 ? '' : 'Error: ')} ${response.response}`;
                 }
 
                 outputElement.innerHTML = output;
