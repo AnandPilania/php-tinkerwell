@@ -1,0 +1,33 @@
+{
+    "name": "niit/php-tinker",
+    "description": "...",
+    "keywords": [],
+    "type": "library",
+    "authors": [
+        {
+            "name": "Anand Pilania",
+            "email": "pilaniaanand@gmail.com"
+        }
+    ],
+    "require": {
+        "laravel/framework": "^8.40",
+        "psy/psysh": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "NIIT\\PHPTinker\\": "src"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "NIIT\\PHPTinker\\ServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
