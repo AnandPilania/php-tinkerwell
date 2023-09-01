@@ -1,40 +1,43 @@
 <?php
 
-namespace NIIT\PHPTinker;
+namespace AnandPilania\WebTinker;
 
-use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Psy\ExecutionClosure;
-use Psy\Shell;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use Symfony\Component\VarDumper\Dumper\HtmlDumper;
 
 class Executor
 {
+    use Support;
+
     public function __invoke(Request $request): View|ViewFactory|JsonResponse
     {
         if ($request->isMethod('GET')) {
-            return view('php-tinker::index');
+            return view('web-tinker::index');
         }
-
-        $code = $request->input('code');
-        $status = 1;
 
         chdir(base_path());
 
-        $shell = new Shell();
-
-        $this->setContext($shell);
+        $status = 1;
+        $app = app();
+        $shell = $this->setContext($app)->getShell();
 
         $output = $this->setOutput();
         $output->setDecorated(true);
 
         $shell->setOutput($output);
+
+        $code = $request->input('code');
+
+        if (blank($code)) {
+            return throw new \Exception('Missing CODE for execution!');
+        }
 
         try {
             $shell->addCode(
@@ -71,7 +74,7 @@ class Executor
                 continue;
             }
 
-            $cleanCode .= in_array($token[0], [T_COMMENT, T_DOC_COMMENT]) ? '' : $token[1];
+            $cleanCode .= in_array($token[0], [T_COMMENT, T_DOC_COMMENT], true) ? '' : $token[1];
         }
 
         if (strncmp($cleanCode, '<?php', 5) === 0) {
@@ -112,21 +115,6 @@ class Executor
         $htmlDumper = (string)$dumper->dump($varCloner->cloneVar($arguments), true);
 
         return Str::cut($htmlDumper, '<pre ', '</pre>');
-    }
-
-    private function setContext(Shell $shell): Application
-    {
-        $app = app();
-
-        $app->singleton('app', function () use ($app) {
-            return $app;
-        });
-
-        $shell->setScopeVariables([
-            'app' => $app,
-        ]);
-
-        return $app;
     }
 
     private function setOutput(): BufferedOutput

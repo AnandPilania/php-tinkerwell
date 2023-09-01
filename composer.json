@@ -1,7 +1,11 @@
 {
-    "name": "niit/php-tinker",
+    "name": "anandpilania/web-tinker",
     "description": "...",
-    "keywords": [],
+    "keywords": [
+        "laravel",
+        "tinker",
+        "pilania"
+    ],
     "type": "library",
     "authors": [
         {
@@ -15,13 +19,13 @@
     },
     "autoload": {
         "psr-4": {
-            "NIIT\\PHPTinker\\": "src"
+            "AnandPilania\\WebTinker\\": "src"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "NIIT\\PHPTinker\\ServiceProvider"
+                "AnandPilania\\WebTinker\\ServiceProvider"
             ]
         }
     },

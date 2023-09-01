@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Tinkerwell Package</title>
+    <title>WebTinker</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -70,7 +70,7 @@
             let output = `<pre class="parent">Command:</pre> ${code}`;
             const xhttp = new XMLHttpRequest();
 
-            xhttp.open('POST', 'php-tinker', true);
+            xhttp.open('POST', 'web-tinker', true);
             xhttp.onreadystatechange = function () {
                 if (this.readyState === 4 && this.status === 200) {
                     const response = JSON.parse(this.responseText);
